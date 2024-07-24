@@ -32,8 +32,9 @@ variable "groups" {
 variable "permission_sets" {
   description = "List of permission sets that should be created in the Identity Center"
   type = list(object({
-    name             = string
-    description      = string
-    session_duration = string
+    name               = string
+    description        = string
+    session_duration   = string
+    managed_policy_arn = string
   }))
 }

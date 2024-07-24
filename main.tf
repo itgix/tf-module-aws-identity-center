@@ -55,12 +55,21 @@ resource "aws_identitystore_group_membership" "group_association" {
 // TODO: to be tested after Identity Center is recreated with local users
 # Premission set
 resource "aws_ssoadmin_permission_set" "permission_set" {
-  for_each         = { for p in var.permission_sets : p.name => p }
-  name             = each.value.name
-  description      = each.value.description
-  instance_arn     = tolist(data.aws_ssoadmin_instances.identity_store.arns)[0]
+  for_each     = { for p in var.permission_sets : p.name => p }
+  name         = each.value.name
+  description  = each.value.description
+  instance_arn = tolist(data.aws_ssoadmin_instances.identity_store.arns)[0]
+  # (Required, Forces new resource) The Amazon Resource Name (ARN) of the SSO Instance under which the operation will be executed.
   relay_state      = "https://s3.console.aws.amazon.com/s3/home?region=${var.aws_region}#"
   session_duration = each.value.session_duration
+}
+
+resource "aws_ssoadmin_managed_policy_attachment" "permission_set_policy" {
+  for_each           = { for p in var.permission_sets : p.name => p }
+  instance_arn       = tolist(data.aws_ssoadmin_instances.identity_store.arns)[0]
+  managed_policy_arn = each.value.managed_policy_arn
+  # TODO: how do we associate in for loop ? 
+  permission_set_arn = aws_ssoadmin_permission_set.aws_ssoadmin_permission_set.arn
 }
 
 #resource "aws_ssoadmin_permission_set" "readonly_non_prod" {
