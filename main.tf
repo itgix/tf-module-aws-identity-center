@@ -54,7 +54,7 @@ resource "aws_identitystore_group_membership" "group_association" {
 
 // TODO: to be tested after Identity Center is recreated with local users
 # Premission set
-resource "aws_ssoadmin_permission_set" "readonly_non_prod" {
+resource "aws_ssoadmin_permission_set" "permission_set" {
   for_each         = { for p in var.permission_sets : p.name => p }
   name             = each.value.name
   description      = each.value.description
