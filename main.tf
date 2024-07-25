@@ -69,7 +69,7 @@ resource "aws_ssoadmin_managed_policy_attachment" "permission_set_policy" {
   instance_arn       = tolist(data.aws_ssoadmin_instances.identity_store.arns)[0]
   managed_policy_arn = each.value.managed_policy_arn
   # TODO: how do we associate in for loop ? 
-  permission_set_arn = aws_ssoadmin_permission_set.aws_ssoadmin_permission_set.arn
+  permission_set_arn = aws_ssoadmin_permission_set.aws_ssoadmin_permission_set[each.key].arn
 }
 
 #resource "aws_ssoadmin_permission_set" "readonly_non_prod" {

@@ -2,6 +2,7 @@ variable "aws_region" {
   description = "AWS Region where Identity Center is created"
   type        = string
 }
+
 variable "identity_store_id" {
   description = "The ID of the AWS Identity Store"
   type        = string
