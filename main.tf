@@ -52,7 +52,6 @@ resource "aws_identitystore_group_membership" "group_association" {
 }
 
 
-// TODO: to be tested after Identity Center is recreated with local users
 # Premission set
 resource "aws_ssoadmin_permission_set" "permission_set" {
   for_each     = { for p in var.permission_sets : p.name => p }
@@ -68,22 +67,20 @@ resource "aws_ssoadmin_managed_policy_attachment" "permission_set_policy" {
   for_each           = { for p in var.permission_sets : p.name => p }
   instance_arn       = tolist(data.aws_ssoadmin_instances.identity_store.arns)[0]
   managed_policy_arn = each.value.managed_policy_arn
-  # TODO: how do we associate in for loop ? 
   permission_set_arn = aws_ssoadmin_permission_set.permission_set[each.key].arn
 }
 
-#resource "aws_ssoadmin_permission_set" "readonly_non_prod" {
-#name             = "ReadOnlyAccess"
-#description      = "A permission set with read-only access to everything except PROD"
-#instance_arn     = tolist(data.aws_ssoadmin_instances.identity_store.arns)[0]
-#relay_state      = "https://s3.console.aws.amazon.com/s3/home?region=${var.aws_region}#"
-#session_duration = "PT2H"
-#}
+# Assign group and permission set to AWS account
+resource "aws_ssoadmin_account_assignment" "account_assignment" {
+  instance_arn = tolist(data.aws_ssoadmin_instances.identity_store.arns)[0]
+  # TODO: how do we make the permission set to group and account mapping ?
+  permission_set_arn = aws_ssoadmin_permission_set.permission_set[each.key].arn
 
-#resource "aws_ssoadmin_permission_set" "readonly_prod" {
-#name             = "Prod-ReadOnlyAccess"
-#description      = "A permission set with read-only access to PROD"
-#instance_arn     = tolist(data.aws_ssoadmin_instances.identity_store.arns)[0]
-#relay_state      = "https://s3.console.aws.amazon.com/s3/home?region=${var.aws_region}#"
-#session_duration = "PT1H"
-#}
+  # TODO: how do we the specific group by index ? 
+  principal_id   = aws_identitystore_group.group.group_id
+  principal_type = "GROUP"
+
+  # TODO: how do we make the account to group and permission set mapping ?
+  target_id   = "123456789012"
+  target_type = "AWS_ACCOUNT"
+}
