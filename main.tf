@@ -43,7 +43,7 @@ locals {
   permission_set_arns = { for p in aws_ssoadmin_permission_set.permission_set : p.name => p.arn }
   permset_group_list = flatten([
     for group in var.groups : [
-      for permission_set in permission_sets : {
+      for permission_set in var.permission_sets : {
         group_name          = group.display_name
         permission_set_name = permission_set
       }
