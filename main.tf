@@ -83,20 +83,21 @@ resource "aws_ssoadmin_managed_policy_attachment" "permission_set_policy" {
 
 # Assign group and permission set to AWS account
 resource "aws_ssoadmin_account_assignment" "account_assignment" {
-  #for_each     = local.group_to_account_pairs
-  for_each     = { for a in local.group_to_account_pairs : "${a.group_name}-${a.account_id}-${a.permission_set_name}" => a }
-  instance_arn = tolist(data.aws_ssoadmin_instances.identity_store.arns)[0]
-  # TODO: how do we make the permission set to group and account mapping ?
-  #permission_set_arn = aws_ssoadmin_permission_set.permission_set[each.key].arn
+  for_each           = { for a in local.group_to_account_pairs : "${a.group_name}-${a.account_id}-${a.permission_set_name}" => a }
+  instance_arn       = tolist(data.aws_ssoadmin_instances.identity_store.arns)[0]
   permission_set_arn = local.permission_set_arns[each.value.permission_set_name]
 
-  # TODO: how do we the specific group by index ? 
-  #principal_id   = aws_identitystore_group.group.group_id
   principal_id   = local.group_ids[each.value.group_name]
   principal_type = "GROUP"
 
-  # TODO: how do we make the account to group and permission set mapping ?
-  #target_id   = "123456789012"
   target_id   = each.value.account_id
   target_type = "AWS_ACCOUNT"
+
+  # should happen last
+  depends_on = [
+    aws_ssoadmin_permission_set.permission_set,
+    aws_ssoadmin_managed_policy_attachment.permission_set_policy,
+    aws_identitystore_group.group,
+    aws_identitystore_group_membership.group_association
+  ]
 }
