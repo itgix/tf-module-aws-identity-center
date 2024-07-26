@@ -27,6 +27,10 @@ variable "groups" {
   type = list(object({
     display_name = string
     description  = string
+    accounts = list(object({
+      account_id     = string
+      permission_set = string
+    }))
   }))
 }
 
