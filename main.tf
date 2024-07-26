@@ -39,8 +39,22 @@ locals {
     ]
   ])
   user_group_pairs = { for ug in local.user_group_list : "${ug.user_name}-${ug.group_name}" => ug }
+
+  permission_set_arns = { for p in aws_ssoadmin_permission_set.permission_set : p.name => p.arn }
+  permset_group_list = flatten([
+    for group in var.groups : [
+      for permission_set in permission_sets : {
+        group_name          = group.display_name
+        permission_set_name = permission_set
+      }
+    ]
+  ])
+  group_to_permission_set_pairs = { for permset_grp in local.permset_group_list : "${permset_grp.group_name}-${permset_grp.permission_set_name}" => permset_grp }
 }
 
+output "group_to_permission_set_pairs" {
+  value = local.group_to_permission_set_pairs
+}
 
 # Assign user to group
 resource "aws_identitystore_group_membership" "group_association" {
@@ -71,16 +85,20 @@ resource "aws_ssoadmin_managed_policy_attachment" "permission_set_policy" {
 }
 
 # Assign group and permission set to AWS account
-resource "aws_ssoadmin_account_assignment" "account_assignment" {
-  instance_arn = tolist(data.aws_ssoadmin_instances.identity_store.arns)[0]
-  # TODO: how do we make the permission set to group and account mapping ?
-  permission_set_arn = aws_ssoadmin_permission_set.permission_set[each.key].arn
+#resource "aws_ssoadmin_account_assignment" "account_assignment" {
+#for_each     = local.group_to_account_pairs
+#instance_arn = tolist(data.aws_ssoadmin_instances.identity_store.arns)[0]
+## TODO: how do we make the permission set to group and account mapping ?
+##permission_set_arn = aws_ssoadmin_permission_set.permission_set[each.key].arn
+#permission_set_arn = local.permission_set_arn[each.value.permission_set_name]
 
-  # TODO: how do we the specific group by index ? 
-  principal_id   = aws_identitystore_group.group.group_id
-  principal_type = "GROUP"
+## TODO: how do we the specific group by index ? 
+##principal_id   = aws_identitystore_group.group.group_id
+#principal_id   = local.group_ids[each.value.group_name]
+#principal_type = "GROUP"
 
-  # TODO: how do we make the account to group and permission set mapping ?
-  target_id   = "123456789012"
-  target_type = "AWS_ACCOUNT"
-}
+## TODO: how do we make the account to group and permission set mapping ?
+##target_id   = "123456789012"
+#target_id   = ""
+#target_type = "AWS_ACCOUNT"
+#}
