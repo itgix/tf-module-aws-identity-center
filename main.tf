@@ -39,21 +39,6 @@ locals {
     ]
   ])
   user_group_pairs = { for ug in local.user_group_list : "${ug.user_name}-${ug.group_name}" => ug }
-
-  permission_set_arns = { for p in aws_ssoadmin_permission_set.permission_set : p.name => p.arn }
-  permset_group_list = flatten([
-    for group in var.groups : [
-      for permission_set in var.permission_sets : {
-        group_name          = group.display_name
-        permission_set_name = permission_set
-      }
-    ]
-  ])
-  group_to_permission_set_pairs = { for permset_grp in local.permset_group_list : "${permset_grp.group_name}-${permset_grp.permission_set_name}" => permset_grp }
-}
-
-output "group_to_permission_set_pairs" {
-  value = local.group_to_permission_set_pairs
 }
 
 # Assign user to group
